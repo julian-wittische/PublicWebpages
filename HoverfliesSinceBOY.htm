@@ -172,7 +172,7 @@
             if (userName) apiUrl += `&user_login=${userName}`;
             if (startDate) apiUrl += `&d1=${startDate}`;
             if (endDate) apiUrl += `&d2=${endDate}`;
-            if (iconicTaxa) apiUrl += `&taxa_name=${iconicTaxa}`;
+            if (iconicTaxa) apiUrl += `&taxon_name=${iconicTaxa}`;
 
             document.getElementById('loading-status').style.display = 'block';
             document.getElementById('total-results').textContent = '';
