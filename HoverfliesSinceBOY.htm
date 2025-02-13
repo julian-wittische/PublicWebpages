@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hoverfly Observations on iNaturalist</title>
+    <style>
+        /* CSS Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hoverfly Observations on iNaturalist since 01/01/2025</h1>
+    <table id="observationsTable">
+        <thead>
+            <tr>
+                <th>Species Name</th>
+                <th>Number of Observations</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be inserted here by JavaScript -->
+        </tbody>
+    </table>
+
+    <script>
+        // JavaScript to fetch and display data
+        document.addEventListener('DOMContentLoaded', function () {
+            const apiUrl = 'https://api.inaturalist.org/v1/observations';
+            const params = {
+                taxon_name: 'Syrphidae', // Filter by hoverfly family
+                quality_grade: 'research', // Only research-grade observations
+                created_d1: '2025-01-01', // Observations since January 1, 2025
+                per_page: 200 // Max observations per page (adjust as needed)
+            };
+
+            // Fetch data from the iNaturalist API
+            fetch(`${apiUrl}?${new URLSearchParams(params)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const observations = data.results;
+                    const speciesCounts = {};
+
+                    // Count observations per species
+                    observations.forEach(obs => {
+                        const speciesName = obs.taxon.name;
+                        if (speciesCounts[speciesName]) {
+                            speciesCounts[speciesName]++;
+                        } else {
+                            speciesCounts[speciesName] = 1;
+                        }
+                    });
+
+                    // Populate the table
+                    const tableBody = document.querySelector('#observationsTable tbody');
+                    for (const [species, count] of Object.entries(speciesCounts)) {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `<td>${species}</td><td>${count}</td>`;
+                        tableBody.appendChild(row);
+                    }
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        });
+    </script>
+</body>
+</html>
