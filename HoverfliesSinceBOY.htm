@@ -49,6 +49,11 @@
 <body>
     <h1>iNaturalist Observations</h1>
     <label>
+        Taxon Name:
+        <input type="text" id="taxon-name" placeholder="Enter taxon name (e.g., Syrphidae)">
+    </label>
+
+    <label>
         Quality Filter:
         <select id="quality-filter">
             <option value="verifiable=true">Verifiable</option>
@@ -150,13 +155,19 @@
         });
 
         document.getElementById('run-query').addEventListener('click', async () => {
+            const taxonName = document.getElementById('taxon-name').value;
             const qualityFilter = document.getElementById('quality-filter').value;
             const taxonomicRank = document.getElementById('taxonomic-rank').value;
             const startDate = document.getElementById('start-date').value;
             const endDate = document.getElementById('end-date').value;
             const userName = document.getElementById('user-name').value;
 
-            let apiUrl = `https://api.inaturalist.org/v2/observations/species_counts?place_id=120582&fields=taxon.id,taxon.name,taxon.default_photo.square_url,count&${qualityFilter}&hrank=${taxonomicRank}`;
+            if (!taxonName) {
+                alert("Please enter a taxon name (e.g., Syrphidae).");
+                return;
+            }
+
+            let apiUrl = `https://api.inaturalist.org/v2/observations/species_counts?taxon_name=${encodeURIComponent(taxonName)}&place_id=120582&fields=taxon.id,taxon.name,taxon.default_photo.square_url,count&${qualityFilter}&hrank=${taxonomicRank}`;
             if (userName) apiUrl += `&user_login=${userName}`;
             if (startDate) apiUrl += `&d1=${startDate}`;
             if (endDate) apiUrl += `&d2=${endDate}`;
