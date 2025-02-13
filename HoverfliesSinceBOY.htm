@@ -245,6 +245,8 @@
                 if (total) {
                     totalCell.textContent = total.count;
                     countCell.textContent = countCell.textContent.trim();
+                    const ratio = ((parseInt(countCell.textContent) / total.count) * 100).toFixed(2);
+                    ratioCell.textContent = `${ratio}%`;
 
                     // Update the observation count URL with filters
                     const observationUrl = `https://inaturalist.lu/observations?taxon_id=${taxonId}&${qualityFilter}&d1=${startDate}&d2=${endDate}`;
