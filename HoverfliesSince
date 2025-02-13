@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>City Nature Challenge species count</title>
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+    th, td {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+    .italic {
+        font-style: italic;
+    }
+</style>
+</head>
+<body>
+
+<h2>City Nature Challenge species count</h2>
+<h3>Enter you iNaturalist user name here to compare the species count of your observation during the CNC 2024 to all you other observations.</h3>    
+
+<!-- Add an input field for user_id -->
+<label for="user-id">Enter you iNat user name here:</label>
+<input type="text" id="user-id" value="">
+<button onclick="reloadData()">Reload Data</button> <!-- Add reload button -->
+
+<table id="species-table">
+  <thead>
+    <tr>
+      <th>Index</th> <!-- Index column added -->
+      <th>Taxon ID</th>
+      <th>Taxon Name</th>
+      <th>Iconic Taxon Name</th>
+      <th>count CNC24</th>
+      <th>total count</th>
+      <th>Ratio (%)</th>
+    </tr>
+  </thead>
+  <tbody id="species-data">
+    <!-- Data will be dynamically added here -->
+  </tbody>
+</table>
+
+<script>
+    // Function to fetch data for a given page
+    function fetchData(pageNumber, userId) {
+        return fetch(`https://api.inaturalist.org/v2/observations/species_counts?project_id=city-nature-challenge-2024-luxembourg&quality_grade=research&user_id=${userId}&page=${pageNumber}&per_page=500&fields=taxon.id,taxon.name,taxon.iconic_taxon_name,count`)
+            .then(response => response.json());
+    }
+
+    // Function to fetch count data for taxon IDs
+    function fetchCountData(taxonIds, userId) {
+        const batchSize = 500;
+        const batches = [];
+        for (let i = 0; i < taxonIds.length; i += batchSize) {
+            const batch = taxonIds.slice(i, i + batchSize);
+            batches.push(batch);
+        }
+        const promises = batches.map(batch => {
+            const taxonIdString = batch.join(',');
+            return fetch(`https://api.inaturalist.org/v2/observations/species_counts?place_id=120582&taxon_id=${taxonIdString}&user_id=${userId}&quality_grade=research&fields=taxon.id,count`)
+                .then(response => response.json());
+        });
+        return Promise.all(promises).then(results => results.reduce((acc, val) => acc.concat(val.results), []));
+    }
+
+    // Function to process data and update table
+    function processData(results) {
+        // Get the tbody element to append data
+        const tbody = document.getElementById('species-data');
+        const taxonIds = results.map(result => result.taxon.id);
+        const userId = document.getElementById('user-id').value; // Get user_id from input field
+
+        // Fetch count data for all taxon IDs
+        fetchCountData(taxonIds, userId)
+            .then(countData => {
+                // Map taxon ID to count
+                const countMap = {};
+                countData.forEach(entry => {
+                    countMap[entry.taxon.id] = entry.count;
+                });
+
+                // Calculate and store ratio values
+                const processedResults = results.map(result => {
+                    const taxonId = result.taxon.id;
+                    const originalCount = result.count;
+                    const newCount = countMap[taxonId] || 0; // If no count data, set it to 0
+                    let ratio = newCount === 0 ? 'N/A' : (originalCount / newCount * 100).toFixed(2);
+                    if (isNaN(ratio)) {
+                        ratio = 0;
+                    }
+                    return { ...result, ratio: parseFloat(ratio), totalCount: newCount };
+                });
+
+                // Sort the data by ratio (descending order) after setting "NaN" to "0"
+                processedResults.sort((a, b) => b.ratio - a.ratio);
+
+                // Clear existing table rows
+                tbody.innerHTML = '';
+
+                // Loop through sorted results and create table rows
+                processedResults.forEach((result, index) => { // Add index parameter to forEach
+                    const taxonId = result.taxon.id;
+                    const taxonName = result.taxon.name;
+                    const iconicTaxonName = result.taxon.iconic_taxon_name;
+                    const originalCount = result.count;
+                    const newCount = result.totalCount;
+                    const ratio = result.ratio === 'N/A' ? 'N/A' : result.ratio + '%';
+                    const countCNC24Url = `https://inaturalist.lu/observations?place_id=120582&project_id=city-nature-challenge-2024-luxembourg&user_id=${userId}&taxon_id=${taxonId}&quality_grade=research`;
+                    const totalCountUrl = `https://inaturalist.lu/observations?place_id=120582&taxon_id=${taxonId}&quality_grade=research&user_id=${userId}`;
+
+                    // Create a table row and append to tbody
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td> <!-- Add index column -->
+                        <td><a href="https://inaturalist.lu/taxa/${taxonId}" target="_blank">${taxonId}</a></td>
+                        <td><span class="italic">${taxonName}</span></td>
+                        <td>${iconicTaxonName}</td>
+                        <td><a href="${countCNC24Url}" target="_blank">${originalCount}</a></td>
+                        <td><a href="${totalCountUrl}" target="_blank">${newCount}</a></td>
+                        <td>${ratio}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching count data:', error);
+            });
+    }
+
+    // Function to fetch all data recursively
+    function fetchAllData(pageNumber = 1, allResults = []) {
+        const userId = document.getElementById('user-id').value; // Get user_id from input field
+        fetchData(pageNumber, userId)
+            .then(data => {
+                const results = data.results;
+                allResults.push(...results);
+                const nextPage = data.page + 1;
+                if (nextPage <= Math.ceil(data.total_results / data.per_page)) {
+                    fetchAllData(nextPage, allResults); // Fetch next page recursively
+                } else {
+                    // All data fetched, process it
+                    processData(allResults);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    }
+
+    // Function to reload data when button is clicked
+    function reloadData() {
+        // Get the user_id from the input field
+        const userId = document.getElementById('user-id').value;
+        
+        // Check if user_id is entered
+        if (userId.trim() === '') {
+            alert('Please enter a user ID.');
+            return;
+        }
+        
+        // Clear existing data
+        const tbody = document.getElementById('species-data');
+        tbody.innerHTML = '';
+        
+        // Fetch new data
+        fetchAllData();
+    }
+
+</script>
+
+</body>
+</html>
