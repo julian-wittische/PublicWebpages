@@ -240,8 +240,6 @@
             rows.forEach(row => {
                 const taxonId = row.cells[1].textContent.trim();
                 const countCell = row.cells[3];
-                const totalCell = row.cells[4];
-                const ratioCell = row.cells[5];
                 const total = allResults.find(item => item.taxon.id === parseInt(taxonId));
 
                 if (total) {
@@ -264,14 +262,11 @@
             data.forEach(item => {
                 const row = document.createElement('tr');
                 const taxonName = item.taxon.name;
-                const taxonId = item.taxon.id;
-                const iconicTaxonName = item.taxon.iconic_taxon_name;
                 const count = item.count;
                 const photoUrl = item.taxon.default_photo ? item.taxon.default_photo.square_url : '';
 
                 row.innerHTML = `
                     <td class="italic">${taxonName}</td>
-                    <td><a href="https://www.inaturalist.org/taxa/${taxonId}" target="_blank">${taxonId}</a></td>
                     <td><a href="https://inaturalist.lu/observations?taxon_id=${taxonId}&${qualityFilter}&d1=${startDate}&d2=${endDate}" target="_blank">${count}</a></td>
                     <td class="total"></td>
                     <td><img src="${photoUrl}" alt="${taxonName}"></td>
