@@ -73,13 +73,26 @@
         <input type="date" id="end-date">
     </label>
 
+    <label>
+        User Name:
+        <input type="text" id="user-name" placeholder="Enter user name">
+    </label>
+
     <fieldset>
         <legend>Iconic Taxa Filter:</legend>
-        <label><input type="checkbox" value="Syrphidae"> Syrphidae</label>
-        <label><input type="checkbox" value="Apoidea"> Apoidea</label>
-        <label><input type="checkbox" value="Ixodida"> Ixodida</label>
-        <label><input type="checkbox" value="Psychodidae"> Psychodidae</label>
-        <label><input type="checkbox" value="Psyllidae"> Psyllidae </label>
+        <label><input type="checkbox" value="Actinopterygii"> Actinopterygii</label>
+        <label><input type="checkbox" value="Animalia"> Animalia</label>
+        <label><input type="checkbox" value="Amphibia"> Amphibia</label>
+        <label><input type="checkbox" value="Arachnida"> Arachnida</label>
+        <label><input type="checkbox" value="Aves"> Aves</label>
+        <label><input type="checkbox" value="Chromista"> Chromista</label>
+        <label><input type="checkbox" value="Fungi"> Fungi</label>
+        <label><input type="checkbox" value="Insecta"> Insecta</label>
+        <label><input type="checkbox" value="Mammalia"> Mammalia</label>
+        <label><input type="checkbox" value="Mollusca"> Mollusca</label>
+        <label><input type="checkbox" value="Reptilia"> Reptilia</label>
+        <label><input type="checkbox" value="Plantae"> Plantae</label>
+        <label><input type="checkbox" value="Protozoa"> Protozoa</label>
     </fieldset>
 
     <button id="run-query">Run Query</button>
@@ -89,7 +102,12 @@
         <thead>
             <tr>
                 <th class="sortable" data-column="0">Taxon Name</th>
-                <th class="sortable" data-column="1">Total</th>
+                <th class="sortable" data-column="1">Taxon ID</th>
+                <th class="sortable" data-column="2">Iconic Taxon Name</th>
+                <th class="sortable" data-column="3">Observation Count</th>
+                <th class="sortable" data-column="4">Total</th>
+                <th class="sortable" data-column="5">Ratio (%)</th>
+                <th class="sortable" data-column="6">Photo</th>
             </tr>
         </thead>
         <tbody id="data-table"></tbody>
