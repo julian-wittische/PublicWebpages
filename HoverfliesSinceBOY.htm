@@ -100,6 +100,7 @@
             <tr>
                 <th class="sortable" data-column="0">Taxon Name</th>
                 <th class="sortable" data-column="1">Total</th>
+                <th class="sortable" data-column="2">Photo</th>
             </tr>
         </thead>
         <tbody id="data-table"></tbody>
@@ -271,10 +272,8 @@
                 row.innerHTML = `
                     <td class="italic">${taxonName}</td>
                     <td><a href="https://www.inaturalist.org/taxa/${taxonId}" target="_blank">${taxonId}</a></td>
-                    <td>${iconicTaxonName}</td>
                     <td><a href="https://inaturalist.lu/observations?taxon_id=${taxonId}&${qualityFilter}&d1=${startDate}&d2=${endDate}" target="_blank">${count}</a></td>
                     <td class="total"></td>
-                    <td class="ratio"></td>
                     <td><img src="${photoUrl}" alt="${taxonName}"></td>
                 `;
                 tableBody.appendChild(row);
