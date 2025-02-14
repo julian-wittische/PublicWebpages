@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iNaturalist Luxembourg observations since 01/01/2025</title>
-    <h1>1) Write a taxa (any rank) you are interested in.
-2) Pick among the suggestions.
-3) The histogram shows the cumulative number of observations since the beginning of the year (01/01/2025).</h1>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -36,7 +34,9 @@
     </style>
 </head>
 <body>
-    <h1>iNaturalist Taxon Suggestions with Observations</h1>
+    <h1>iNaturalist Luxembourg observations since 01/01/2025</h1>
+    <p>1) Write a taxa (any rank) you are interested in.<br>2) Pick among the suggestions.</br>
+3) The histogram shows the cumulative number of observations since the beginning of the year (01/01/2025).</p>
     <input type="text" id="taxonInput" placeholder="Enter taxon name">
     <button id="searchButton">Search</button>
     <div id="suggestions"></div>
@@ -70,7 +70,12 @@
                 const observationsData = await observationsResponse.json();
                 suggestionElement.querySelector('.observation-count').textContent = `Observations: ${observationsData.total_results}`;
 
-                suggestionElement.addEventListener('click', () => fetchHistogram(result.id));
+                suggestionElement.addEventListener('click', () => {
+    			document.getElementById('suggestions').innerHTML = '';
+    			document.getElementById('suggestions').appendChild(suggestionElement);
+    			fetchHistogram(result.id);
+		});
+;
                 suggestionsContainer.appendChild(suggestionElement);
             });
         }
