@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iNaturalist Luxembourg observations since 01/01/2025</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #suggestions {
+            margin-top: 10px;
+        }
+        .suggestion {
+            padding: 5px;
+            border-bottom: 1px solid #ccc;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+        }
+        .suggestion:hover {
+            background-color: #f0f0f0;
+        }
+        #searchButton {
+            margin-left: 5px;
+        }
+        #chartContainer {
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>iNaturalist Taxon Suggestions with Observations</h1>
+    <input type="text" id="taxonInput" placeholder="Enter taxon name">
+    <button id="searchButton">Search</button>
+    <div id="suggestions"></div>
+    <div id="chartContainer">
+        <canvas id="observationChart"></canvas>
+    </div>
+
+    <script>
+        document.getElementById('searchButton').addEventListener('click', fetchSuggestions);
+        let chartInstance = null;
+
+        async function fetchSuggestions() {
+            const input = document.getElementById('taxonInput').value;
+            if (input.length < 3) {
+                document.getElementById('suggestions').innerHTML = '';
+                return;
+            }
+
+            const response = await fetch(`https://api.inaturalist.org/v2/taxa/autocomplete?q=${input}&fields=id,name,rank`);
+            const data = await response.json();
+
+            const suggestionsContainer = document.getElementById('suggestions');
+            suggestionsContainer.innerHTML = '';
+
+            data.results.forEach(async (result) => {
+                const suggestionElement = document.createElement('div');
+                suggestionElement.classList.add('suggestion');
+                suggestionElement.innerHTML = `<span>${result.name} (Rank: ${result.rank})</span> <span class="observation-count">Loading...</span>`;
+
+                const observationsResponse = await fetch(`https://api.inaturalist.org/v2/observations?taxon_id=${result.id}&d1=2025-01-01&place_id=120582&per_page=0`);
+                const observationsData = await observationsResponse.json();
+                suggestionElement.querySelector('.observation-count').textContent = `Observations: ${observationsData.total_results}`;
+
+                suggestionElement.addEventListener('click', () => fetchHistogram(result.id));
+                suggestionsContainer.appendChild(suggestionElement);
+            });
+        }
+
+        async function fetchHistogram(taxonId) {
+            const response = await fetch(`https://api.inaturalist.org/v2/observations/histogram?d1=2025-01-01&place_id=120582&taxon_id=${taxonId}&date_field=observed&interval=day`);
+            const data = await response.json();
+            const histogramData = data.results.day;
+
+            let labels = Object.keys(histogramData);
+            let values = Object.values(histogramData);
+            let cumulativeValues = [];
+            let cumulativeSum = 0;
+            
+            values.forEach(value => {
+                cumulativeSum += value;
+                cumulativeValues.push(cumulativeSum);
+            });
+
+            document.getElementById('chartContainer').style.display = 'block';
+            renderChart(labels, cumulativeValues);
+        }
+
+        function renderChart(labels, values) {
+            const ctx = document.getElementById('observationChart').getContext('2d');
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Cumulative Observations',
+                        data: values,
+                        borderColor: 'blue',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: { title: { display: true, text: 'Date' } },
+                        y: { title: { display: true, text: 'Cumulative Observations' } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
