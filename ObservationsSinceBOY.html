@@ -40,9 +40,13 @@
     <input type="text" id="taxonInput" placeholder="Enter taxon name">
     <button id="searchButton">Search</button>
     <div id="suggestions"></div>
+        <button id="inatButton" style="display: none; margin-top: 10px;">View on iNaturalist</button>
     <div id="chartContainer">
         <canvas id="observationChart"></canvas>
     </div>
+
+
+
  <script>
  /**
  * Skipped minification because the original files appears to be already minified.
@@ -94,6 +98,16 @@
                 suggestionElement.addEventListener('click', () => {
     			document.getElementById('suggestions').innerHTML = '';
     			document.getElementById('suggestions').appendChild(suggestionElement);
+                  const taxon = event.target.textContent.trim();
+        document.getElementById('taxonInput').value = taxon;
+        
+        // Show the iNaturalist button and set its link
+        const inatButton = document.getElementById('inatButton');
+        inatButton.style.display = 'block';
+        inatButton.onclick = function () {
+            const query = encodeURIComponent(taxon);
+            window.open(`https://www.inaturalist.org/observations?taxon_id=${result.id}&d1=2025-01-01&place_id=120582`, '_blank');
+        };
     			fetchHistogram(result.id);
 		});
 ;
@@ -145,6 +159,14 @@
                 }
             });
         }
+        document.getElementById('suggestions').addEventListener('click', function(event) {
+    if (event.target.classList.contains('suggestion')) {
+        const taxon = event.target.textContent.trim();
+        document.getElementById('taxonInput').value = taxon;
+        
+
+    }
+});
     </script>
 </body>
 </html>
